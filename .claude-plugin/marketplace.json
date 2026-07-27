@@ -1,0 +1,21 @@
+{
+  "name": "lightthecandle",
+  "description": "Portable Light the Candle agent integrations.",
+  "owner": {
+    "name": "Aaron Robbins"
+  },
+  "plugins": [
+    {
+      "name": "lightthecandle",
+      "source": "./",
+      "description": "Adopt software projects into governed, evidence-oriented delivery.",
+      "category": "Development Tools",
+      "tags": [
+        "software-development",
+        "sdlc",
+        "engineering",
+        "delivery"
+      ]
+    }
+  ]
+}

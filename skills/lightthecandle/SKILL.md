@@ -1,6 +1,6 @@
 ---
 name: lightthecandle
-description: Use the Light the Candle v0.1 local-first foundation to preview, initialise, adopt, locally register, inspect, or diagnose a new or existing software project with an explicit executive strategy seed and selected rigor profile. It supports websites, mobile apps, APIs, libraries, services, infrastructure, enterprise systems, and other development efforts. Its governed self-evolving executive and full-SDLC organisation are the product direction, not autonomous v0.1 capabilities. This tool is separate from FaultPilot's gimmebackmyson workflow.
+description: Use the Light the Candle v0.1 local-first foundation in Codex or Claude Code to preview, initialise, adopt, locally register, inspect, or diagnose a new or existing software project with an explicit executive strategy seed and selected rigor profile. It supports websites, mobile apps, APIs, libraries, services, infrastructure, enterprise systems, and other development efforts. Its governed self-evolving executive and full-SDLC organisation are the product direction, not autonomous v0.1 capabilities. This tool is separate from FaultPilot's gimmebackmyson workflow.
 ---
 
 # Light the Candle
@@ -11,7 +11,13 @@ Light the Candle connects executive intent to governed software delivery:
 intent -> governed execution -> verified outcome -> durable recovery
 ```
 
-Invoke with `$lightthecandle` or select **Light the Candle** through the plugin.
+Invoke through the installed agent surface:
+
+- Codex: `$lightthecandle` or select **Light the Candle**
+- Claude Code: `/lightthecandle:lightthecandle`
+
+Both surfaces are adapters around the same kernel and project state. Do not
+create agent-specific manifests, ledgers, policy copies, or memory stores.
 
 ## Product doctrine
 
@@ -37,15 +43,26 @@ or modify production.
 
 ## Version 0.1 commands
 
-The portable CLI is the deterministic source for current mechanics:
+The portable CLI is the deterministic source for current mechanics. Resolve
+the plugin root from the active adapter, never from a hard-coded machine path:
+
+- In Claude Code skill content, `${CLAUDE_PLUGIN_ROOT}` resolves to the
+  installed plugin root.
+- In Codex, use the plugin root containing this `skills/` directory.
 
 ```text
-python3 <plugin>/scripts/ltc.py init <path> [options]
-python3 <plugin>/scripts/ltc.py adopt <path> [options]
-python3 <plugin>/scripts/ltc.py register <path> [options]
-python3 <plugin>/scripts/ltc.py status <path>
-python3 <plugin>/scripts/ltc.py doctor <path>
-python3 <plugin>/scripts/ltc.py profiles
+python3 <plugin-root>/scripts/ltc.py init <path> [options]
+python3 <plugin-root>/scripts/ltc.py adopt <path> [options]
+python3 <plugin-root>/scripts/ltc.py register <path> [options]
+python3 <plugin-root>/scripts/ltc.py status <path>
+python3 <plugin-root>/scripts/ltc.py doctor <path>
+python3 <plugin-root>/scripts/ltc.py profiles
+```
+
+For Claude Code, the concrete command prefix is:
+
+```text
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/ltc.py"
 ```
 
 Use `--json` when consuming results programmatically.
@@ -99,8 +116,8 @@ Every active initiative should contribute to an outcome, mandatory obligation,
 maintenance need, risk treatment, or approved learning experiment. Challenge a
 plan when new evidence shows that it no longer serves the approved intent.
 
-Read `<plugin>/docs/executive-strategy.md` before designing strategy or learning
-features.
+Read `<plugin-root>/docs/executive-strategy.md` before designing strategy or
+learning features.
 
 In v0.1, the adopted strategy seed is immutable because any unexplained
 manifest change fails its ledger binding. Strategy review, approval, versioning,
@@ -147,8 +164,8 @@ identity provider, secret manager, or substitute for provider access control.
 - Unknown schemas or project identities fail closed without mutation.
 - Preserve interrupted or unrelated work before cleanup or replacement.
 
-Read `<plugin>/docs/threat-model.md` before adding any execution or integration
-capability.
+Read `<plugin-root>/docs/threat-model.md` before adding any execution or
+integration capability.
 
 ## Separation from FaultPilot
 

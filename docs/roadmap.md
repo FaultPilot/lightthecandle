@@ -2,7 +2,8 @@
 
 ## Milestone 0.1: foundation
 
-- Shareable Codex plugin and portable CLI
+- Shareable Codex and Claude Code plugins around one portable CLI
+- Cross-agent packaging contract with one manifest and local ledger per project
 - Universal project manifest and four rigor profiles
 - Executive strategy seed, outcomes, measures, assumptions, and constraints
 - Stack, command, Git, CI, mobile, and provider discovery

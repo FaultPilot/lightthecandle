@@ -23,8 +23,14 @@ secrets, observability, and communication.
 
 ### Agent surfaces
 
-The portable CLI is authoritative for deterministic mechanics. Codex skills,
-plugins, other agent integrations, and future interfaces call the same kernel.
+The portable CLI is authoritative for deterministic mechanics. Codex and
+Claude Code use thin manifests around the same Agent Skill and kernel. Future
+agent integrations must preserve that contract instead of forking project
+state or policy.
+
+Agent surfaces may supply invocation syntax, plugin-root resolution, and
+agent-specific presentation metadata. They do not own authoritative state.
+See `agent-adapters.md`.
 
 ### Human projections
 

@@ -9,7 +9,7 @@ Aaron-specific paths, private vaults, or provider credentials.
 ## Architecture
 
 - Keep deterministic mechanics in the portable CLI and kernel.
-- Keep Codex skills thin and free of authoritative state.
+- Keep agent skills thin and free of authoritative state.
 - Keep project manifests portable, non-secret, and machine-path independent.
 - Put provider behavior behind capability-scoped adapters.
 - Treat memory as advisory and evidence as subject-bound.
@@ -37,7 +37,8 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 PYTHONPYCACHEPREFIX=/tmp/ltc-pycache python3 -m py_compile scripts/ltc.py src/lightthecandle/*.py
 python3 "$CODEX_HOME/skills/.system/plugin-creator/scripts/validate_plugin.py" .
 python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" skills/lightthecandle
-jq -e . .codex-plugin/plugin.json schemas/*.json src/lightthecandle/policies/*.json
+claude plugin validate --strict .
+jq -e . .codex-plugin/plugin.json .claude-plugin/*.json schemas/*.json src/lightthecandle/policies/*.json
 ```
 
 Start narrow, then run the entire suite before release.

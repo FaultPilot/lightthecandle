@@ -1,6 +1,6 @@
 # Light the Candle
 
-Light the Candle v0.1 is a local-first project adoption and readiness
+Light the Candle v0.1.1 is a local-first project adoption and readiness
 foundation. It captures an executive strategy seed, selects delivery rigor,
 discovers project capabilities, and binds portable project intent to a local
 integrity ledger.
@@ -20,7 +20,7 @@ intent -> governed execution -> verified outcome -> durable recovery
 
 Version 0.1 establishes a project-neutral adoption and readiness foundation:
 
-- Codex plugin packaging and a portable Python CLI
+- Codex and Claude Code plugin packaging around one portable Python CLI
 - new-project and existing-project discovery
 - prototype, quality, production, and enterprise profiles
 - committed, portable project manifests with no machine-specific paths
@@ -33,6 +33,33 @@ Version 0.1 establishes a project-neutral adoption and readiness foundation:
 It does not yet claim autonomous delivery, remote coordination, provider
 actions, or complete enterprise certification. Those capabilities are gated by
 the roadmap and evaluation suite.
+
+## Agent surfaces
+
+Codex and Claude Code load the same `skills/lightthecandle/SKILL.md` and call
+the same deterministic kernel. They do not maintain separate project state.
+
+- Codex invocation: `$lightthecandle`
+- Claude Code invocation: `/lightthecandle:lightthecandle`
+
+Test the Claude Code adapter directly from a clone:
+
+```bash
+claude plugin validate --strict .
+claude --plugin-dir .
+```
+
+For a persistent local Claude Code installation, this repository is also a
+single-plugin marketplace:
+
+```bash
+claude plugin marketplace add /path/to/lightthecandle
+claude plugin install lightthecandle@lightthecandle
+```
+
+For distribution from Git, friends can add the hosted repository instead of a
+local path. See `docs/agent-adapters.md` for the adapter contract and current
+limitations.
 
 ## Try locally
 
@@ -63,6 +90,7 @@ cross-machine history, delivery execution, or release and recovery workflows.
 
 - `docs/product-spec.md`
 - `docs/architecture.md`
+- `docs/agent-adapters.md`
 - `docs/roadmap.md`
 - `docs/threat-model.md`
 

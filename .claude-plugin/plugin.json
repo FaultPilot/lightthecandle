@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "lightthecandle",
+  "displayName": "Light the Candle",
+  "version": "0.1.1",
+  "description": "A local-first foundation for adopting software projects into governed delivery.",
+  "author": {
+    "name": "Aaron Robbins"
+  },
+  "keywords": [
+    "software-development",
+    "sdlc",
+    "engineering",
+    "delivery",
+    "orchestration"
+  ]
+}

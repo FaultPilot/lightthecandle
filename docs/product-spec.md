@@ -102,8 +102,9 @@ recorded rationale. They may not be silently skipped.
 
 ## Version 0.1 outcome
 
-A friend can clone or install the plugin, preview adoption of an unrelated
-repository, approve a portable manifest, inspect the detected stack and
-commands, explicitly register a trusted copied manifest on a new machine, run
-read-only status, and receive profile-aware doctor findings. Shared
+A friend can clone or install the plugin in Codex or Claude Code, preview
+adoption of an unrelated repository, approve a portable manifest, inspect the
+detected stack and commands, explicitly register a trusted copied manifest on
+a new machine, run read-only status, and receive profile-aware doctor findings.
+Both agents operate on the same portable manifest and local ledger. Shared
 organisational history and strategy evolution are later milestones.
