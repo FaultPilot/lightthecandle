@@ -1,0 +1,51 @@
+{
+  "schema_version": "lightthecandle.policy/v1",
+  "profile": "enterprise",
+  "description": "Produce buyer-defensible security, reliability, governance, recovery, and audit evidence.",
+  "required_commands": ["build", "test"],
+  "recommended_commands": ["lint", "typecheck", "security", "e2e"],
+  "required_strategy_fields": [
+    "purpose",
+    "outcomes",
+    "success_measures",
+    "constraints",
+    "assumptions",
+    "decision_principles"
+  ],
+  "required_stages": [
+    "idea",
+    "discovery",
+    "feasibility",
+    "requirements",
+    "product_design",
+    "architecture",
+    "security_privacy_data",
+    "planning",
+    "implementation",
+    "verification",
+    "release",
+    "deployment",
+    "operations",
+    "maintenance",
+    "incident_response",
+    "retrospective",
+    "retirement"
+  ],
+  "required_capabilities": [
+    "source_control",
+    "ci",
+    "deployment",
+    "observability"
+  ],
+  "human_authority": [
+    "strategy_change",
+    "policy_change",
+    "external_write",
+    "publication",
+    "release",
+    "deployment",
+    "spending",
+    "production_action",
+    "policy_reduction"
+  ]
+}

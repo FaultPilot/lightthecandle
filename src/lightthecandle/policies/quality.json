@@ -1,0 +1,27 @@
+{
+  "schema_version": "lightthecandle.policy/v1",
+  "profile": "quality",
+  "description": "Deliver a polished application, website, service, or library.",
+  "required_commands": ["test"],
+  "recommended_commands": ["build", "lint", "typecheck"],
+  "required_strategy_fields": ["purpose", "outcomes"],
+  "required_stages": [
+    "idea",
+    "discovery",
+    "requirements",
+    "product_design",
+    "architecture",
+    "planning",
+    "implementation",
+    "verification",
+    "release",
+    "retrospective"
+  ],
+  "human_authority": [
+    "external_write",
+    "publication",
+    "spending",
+    "production_action",
+    "policy_reduction"
+  ]
+}

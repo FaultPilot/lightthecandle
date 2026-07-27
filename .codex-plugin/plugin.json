@@ -1,0 +1,33 @@
+{
+  "name": "lightthecandle",
+  "version": "0.1.0",
+  "description": "A local-first foundation for adopting software projects into governed delivery.",
+  "author": {
+    "name": "Aaron Robbins"
+  },
+  "keywords": [
+    "software-development",
+    "sdlc",
+    "engineering",
+    "delivery",
+    "orchestration"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Light the Candle",
+    "shortDescription": "Adopt projects into governed software delivery.",
+    "longDescription": "Preview and adopt a software project, capture its executive intent, select a rigor profile, and inspect local readiness with portable state.",
+    "developerName": "Aaron Robbins",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Preview adoption of this project and identify its readiness gaps.",
+      "Create a governed project manifest from this software idea.",
+      "Check this adopted project's local state and selected rigor profile."
+    ],
+    "brandColor": "#D98B22"
+  }
+}

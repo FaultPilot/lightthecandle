@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lightthecandle.dev/schemas/policy.v1.json",
+  "title": "Light the Candle rigor policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile",
+    "description",
+    "required_commands",
+    "recommended_commands",
+    "required_strategy_fields",
+    "required_stages",
+    "human_authority"
+  ],
+  "properties": {
+    "schema_version": {"const": "lightthecandle.policy/v1"},
+    "profile": {
+      "enum": ["prototype", "quality", "production", "enterprise"]
+    },
+    "description": {"type": "string", "minLength": 1},
+    "required_commands": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "recommended_commands": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "required_strategy_fields": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "purpose",
+          "outcomes",
+          "success_measures",
+          "assumptions",
+          "constraints",
+          "decision_principles",
+          "review_triggers"
+        ]
+      }
+    },
+    "required_stages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "required_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "human_authority": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "strategy_change",
+          "policy_change",
+          "external_write",
+          "publication",
+          "release",
+          "deployment",
+          "spending",
+          "production_action",
+          "policy_reduction"
+        ]
+      }
+    }
+  }
+}

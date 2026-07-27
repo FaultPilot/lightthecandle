@@ -1,0 +1,36 @@
+{
+  "schema_version": "lightthecandle.policy/v1",
+  "profile": "production",
+  "description": "Serve real users and important data with operational controls.",
+  "required_commands": ["build", "test"],
+  "recommended_commands": ["lint", "typecheck", "security"],
+  "required_strategy_fields": ["purpose", "outcomes", "success_measures", "constraints"],
+  "required_stages": [
+    "idea",
+    "discovery",
+    "feasibility",
+    "requirements",
+    "product_design",
+    "architecture",
+    "security_privacy_data",
+    "planning",
+    "implementation",
+    "verification",
+    "release",
+    "deployment",
+    "operations",
+    "maintenance",
+    "incident_response",
+    "retrospective"
+  ],
+  "required_capabilities": ["source_control", "ci"],
+  "human_authority": [
+    "external_write",
+    "publication",
+    "release",
+    "deployment",
+    "spending",
+    "production_action",
+    "policy_reduction"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lightthecandle.dev/schemas/strategy.v1.json",
+  "title": "Light the Candle strategy seed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "purpose",
+    "outcomes",
+    "success_measures",
+    "assumptions",
+    "constraints",
+    "decision_principles",
+    "review_triggers"
+  ],
+  "properties": {
+    "purpose": {"type": "string"},
+    "outcomes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "success_measures": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "constraints": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "decision_principles": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "review_triggers": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

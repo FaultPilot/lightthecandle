@@ -1,0 +1,4 @@
+interface:
+  display_name: "Light the Candle"
+  short_description: "Adopt projects into governed software delivery."
+  default_prompt: "Use $lightthecandle to preview this project's adoption and report its readiness gaps without writing."

@@ -1,0 +1,22 @@
+{
+  "schema_version": "lightthecandle.policy/v1",
+  "profile": "prototype",
+  "description": "Prove an idea quickly without presenting it as production-ready.",
+  "required_commands": [],
+  "recommended_commands": ["test"],
+  "required_strategy_fields": ["purpose"],
+  "required_stages": [
+    "idea",
+    "discovery",
+    "implementation",
+    "verification",
+    "retrospective"
+  ],
+  "human_authority": [
+    "external_write",
+    "publication",
+    "spending",
+    "production_action",
+    "policy_reduction"
+  ]
+}

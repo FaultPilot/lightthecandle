@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lightthecandle.dev/schemas/event.v1.json",
+  "title": "Light the Candle event envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "sequence",
+    "event_id",
+    "project_id",
+    "event_type",
+    "recorded_at",
+    "actor",
+    "payload",
+    "previous_hash",
+    "hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "lightthecandle.event/v1"},
+    "sequence": {"type": "integer", "minimum": 1},
+    "event_id": {"type": "string", "format": "uuid"},
+    "project_id": {"type": "string", "format": "uuid"},
+    "event_type": {"type": "string"},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": {"enum": ["human", "agent", "adapter", "system"]},
+        "id": {"type": "string"}
+      }
+    },
+    "payload": {"type": "object"},
+    "previous_hash": {"type": "string"},
+    "hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}
