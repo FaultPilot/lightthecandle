@@ -32,6 +32,10 @@ Agent surfaces may supply invocation syntax, plugin-root resolution, and
 agent-specific presentation metadata. They do not own authoritative state.
 See `agent-adapters.md`.
 
+External workers and workflow runtimes remain replaceable. They emit receipts
+to the Light the Candle control plane and cannot satisfy gates or mutate
+canonical state directly. See `technology-strategy.md`.
+
 ### Human projections
 
 Readable plans, build logs, reports, and memories are projections from

@@ -38,7 +38,7 @@ PYTHONPYCACHEPREFIX=/tmp/ltc-pycache python3 -m py_compile scripts/ltc.py src/li
 python3 "$CODEX_HOME/skills/.system/plugin-creator/scripts/validate_plugin.py" .
 python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" skills/lightthecandle
 claude plugin validate --strict .
-jq -e . .codex-plugin/plugin.json .claude-plugin/*.json schemas/*.json src/lightthecandle/policies/*.json
+jq -e . .codex-plugin/plugin.json .claude-plugin/*.json .agents/plugins/marketplace.json schemas/*.json src/lightthecandle/policies/*.json
 ```
 
 Start narrow, then run the entire suite before release.

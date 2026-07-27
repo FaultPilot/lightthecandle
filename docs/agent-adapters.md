@@ -22,20 +22,28 @@ create its own project memory.
 | Claude Code | `.claude-plugin/plugin.json` | `/lightthecandle:lightthecandle` | `${CLAUDE_PLUGIN_ROOT}` |
 
 The shared skill is `skills/lightthecandle/SKILL.md`. The two manifests contain
-only identity and presentation metadata. Version 0.1.1 intentionally ships no
+only identity and presentation metadata. Version 0.1.2 intentionally ships no
 hooks, MCP servers, background monitors, provider credentials, or automatic
 execution.
 
-## Claude Code installation
+## Installation
 
-Test a clone without installing it:
+Validate a clone without installing it:
 
 ```bash
+python3 scripts/ltc.py profiles --json
 claude plugin validate --strict .
 claude --plugin-dir .
 ```
 
-Install the clone persistently through its local marketplace:
+Install the clone as a local Codex marketplace:
+
+```bash
+codex plugin marketplace add /path/to/lightthecandle
+codex plugin add lightthecandle@lightthecandle
+```
+
+Install the clone as a local Claude Code marketplace:
 
 ```bash
 claude plugin marketplace add /path/to/lightthecandle
@@ -46,10 +54,13 @@ After the repository is hosted, replace the local path with its GitHub
 `owner/repository` or Git URL. Claude Code copies installed plugins into its
 cache, so every runtime dependency must remain inside this repository.
 
+See `distribution.md` for the distinction between Git distribution, ChatGPT
+workspace sharing, and public-directory publication.
+
 ## Current limitation
 
 Cross-agent compatibility does not mean cross-agent concurrency or shared
-remote memory. Version 0.1.1 lets Codex and Claude Code operate the same local
+remote memory. Version 0.1.2 lets Codex and Claude Code operate the same local
 project contract. Claims, leases, remote history, conflict handling, handoff
 bundles, and coordinated agent execution remain roadmap work and require
 separate threat modelling and tests.

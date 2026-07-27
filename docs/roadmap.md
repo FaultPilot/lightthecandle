@@ -16,6 +16,8 @@
 ## Milestone 0.2: lifecycle and memory
 
 - Requirements, decision, risk, plan, evidence, and memory schemas
+- Citation, subject-binding, freshness, expiry, supersession, and revalidation
+  rules for evidence-backed memory
 - Strategy review, strategic-bet, portfolio-priority, and evolution-proposal
   schemas
 - Lifecycle transition engine and explicit not-applicable rationale
@@ -27,9 +29,12 @@
 ## Milestone 0.3: coordinated delivery
 
 - Work graph, claims, leases, path/resource reservations, and conflict checks
+- Versioned task, agent-run receipt, evidence receipt, and workflow-runtime
+  contracts
 - Worktree orchestration and safe parallel-agent assignment
 - Exact-command verification receipts and change-bound approvals
 - Whole-branch integration review
+- Native deterministic runner and removable worker-adapter conformance harness
 
 ## Milestone 0.4: providers and policy
 
@@ -38,6 +43,8 @@
 - Web, mobile, API, library, and monorepo project packs
 - Deployment, database, distribution, and observability interfaces
 - Trusted, opt-in safety hooks
+- Optional LangGraph runtime and external-agent adapter experiments after
+  control-plane conformance gates pass
 
 ## Milestone 1.0: supported general availability
 

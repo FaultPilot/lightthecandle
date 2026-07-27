@@ -35,6 +35,17 @@ class AgentAdapterContractTest(unittest.TestCase):
         self.assertEqual(plugin["name"], "lightthecandle")
         self.assertEqual(plugin["source"], "./")
 
+    def test_codex_repo_marketplace_installs_this_plugin_root(self) -> None:
+        marketplace = self.load_json(".agents/plugins/marketplace.json")
+
+        self.assertEqual(marketplace["name"], "lightthecandle")
+        self.assertEqual(len(marketplace["plugins"]), 1)
+        plugin = marketplace["plugins"][0]
+        self.assertEqual(plugin["name"], "lightthecandle")
+        self.assertEqual(plugin["source"], {"source": "local", "path": "./"})
+        self.assertEqual(plugin["policy"]["installation"], "AVAILABLE")
+        self.assertEqual(plugin["policy"]["authentication"], "ON_INSTALL")
+
     def test_adapters_do_not_add_automatic_execution_surfaces(self) -> None:
         codex = self.load_json(".codex-plugin/plugin.json")
         claude = self.load_json(".claude-plugin/plugin.json")

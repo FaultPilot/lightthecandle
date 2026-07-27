@@ -1,6 +1,6 @@
 # Light the Candle
 
-Light the Candle v0.1.1 is a local-first project adoption and readiness
+Light the Candle v0.1.2 is a local-first project adoption and readiness
 foundation. It captures an executive strategy seed, selects delivery rigor,
 discovers project capabilities, and binds portable project intent to a local
 integrity ledger.
@@ -49,17 +49,25 @@ claude plugin validate --strict .
 claude --plugin-dir .
 ```
 
-For a persistent local Claude Code installation, this repository is also a
-single-plugin marketplace:
+This repository is a self-contained marketplace for both Codex and Claude
+Code. Test a local Codex marketplace installation with:
+
+```bash
+codex plugin marketplace add /path/to/lightthecandle
+codex plugin add lightthecandle@lightthecandle
+```
+
+For a persistent local Claude Code installation:
 
 ```bash
 claude plugin marketplace add /path/to/lightthecandle
 claude plugin install lightthecandle@lightthecandle
 ```
 
-For distribution from Git, friends can add the hosted repository instead of a
-local path. See `docs/agent-adapters.md` for the adapter contract and current
-limitations.
+After the repository is hosted, replace the local path with its GitHub
+`owner/repository` or Git URL. A ChatGPT desktop share link for a local plugin
+is workspace-scoped; it is not public Git distribution. See
+`docs/distribution.md` and `docs/agent-adapters.md`.
 
 ## Try locally
 
@@ -91,6 +99,8 @@ cross-machine history, delivery execution, or release and recovery workflows.
 - `docs/product-spec.md`
 - `docs/architecture.md`
 - `docs/agent-adapters.md`
+- `docs/distribution.md`
+- `docs/technology-strategy.md`
 - `docs/roadmap.md`
 - `docs/threat-model.md`
 
