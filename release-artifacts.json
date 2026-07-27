@@ -65,11 +65,11 @@
     "tests/test_release.py"
   ],
   "wheel": [
-    "lightthecandle-0.1.3.dist-info/LICENSE",
     "lightthecandle-0.1.3.dist-info/METADATA",
     "lightthecandle-0.1.3.dist-info/RECORD",
     "lightthecandle-0.1.3.dist-info/WHEEL",
     "lightthecandle-0.1.3.dist-info/entry_points.txt",
+    "lightthecandle-0.1.3.dist-info/licenses/LICENSE",
     "lightthecandle-0.1.3.dist-info/top_level.txt",
     "lightthecandle/__init__.py",
     "lightthecandle/cli.py",

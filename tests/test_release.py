@@ -52,7 +52,7 @@ class ReleaseContractTest(unittest.TestCase):
         self.assertIn("LICENSE", allowlist["sdist"])
         self.assertIn("scripts/check_artifacts.py", allowlist["sdist"])
         self.assertIn(
-            "lightthecandle-0.1.3.dist-info/LICENSE",
+            "lightthecandle-0.1.3.dist-info/licenses/LICENSE",
             allowlist["wheel"],
         )
         self.assertEqual(len(allowlist["sdist"]), len(set(allowlist["sdist"])))

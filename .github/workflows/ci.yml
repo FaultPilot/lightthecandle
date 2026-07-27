@@ -50,7 +50,9 @@ jobs:
       - name: Build source and verified wheel artifacts
         if: matrix.python-version == '3.12'
         run: |
-          python -m pip install --upgrade build
+          python -m pip install \
+            "build==1.4.4" \
+            "setuptools==82.0.1"
           python -m build --sdist
           python -m pip wheel --no-deps --no-build-isolation \
             dist/lightthecandle-*.tar.gz --wheel-dir dist/from-sdist
