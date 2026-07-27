@@ -11,17 +11,19 @@ workspaces, and command-line installation. The repository contains both:
 - `.agents/plugins/marketplace.json` for Codex and ChatGPT plugin hosts
 - `.claude-plugin/marketplace.json` for Claude Code
 
-After the repository has a Git URL, a Codex user can install it with:
+After the repository has a Git URL and release tag, a Codex user can install
+the tag-pinned beta with:
 
 ```bash
-codex plugin marketplace add owner/repository
+codex plugin marketplace add FaultPilot/lightthecandle --ref lightthecandle--v0.1.3
 codex plugin add lightthecandle@lightthecandle
 ```
 
 A Claude Code user can install the same repository with:
 
 ```bash
-claude plugin marketplace add owner/repository
+claude plugin marketplace add \
+  https://github.com/FaultPilot/lightthecandle.git#lightthecandle--v0.1.3
 claude plugin install lightthecandle@lightthecandle
 ```
 
@@ -50,3 +52,20 @@ test cases.
 Keep Git distribution as the private-beta channel. Submit to the public
 directory only after the product claims, security model, documentation,
 fixtures, support path, and release process are ready for unknown users.
+
+## Release version policy
+
+Tagged releases use one base Semantic Version in Python, Codex, Claude Code,
+the changelog, and tag. The tag format is
+`lightthecandle--v<version>`.
+
+A `+codex.<timestamp>` suffix is a local-development cachebuster only. It may be
+used temporarily to refresh a personal Codex installation but must not appear
+in a public tag.
+
+A Git tag is only as stable as the repository controls around it. Each public
+release records the resolved commit SHA and uses a protected tag; the install
+syntax alone does not provide cryptographic immutability.
+
+Use `public-beta.md` for tested install, update, verification, and uninstall
+commands. Use `release-checklist.md` before any external publication.

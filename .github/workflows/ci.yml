@@ -1,0 +1,70 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.12", "3.14"]
+
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Validate release source
+        run: python scripts/release_guard.py --require-license
+      - name: Scan reachable Git history
+        if: matrix.python-version == '3.12'
+        run: python scripts/release_guard.py --require-license --scan-history
+      - name: Validate tagged release state
+        if: startsWith(github.ref, 'refs/tags/lightthecandle--v')
+        run: |
+          python scripts/release_guard.py \
+            --require-license \
+            --scan-history \
+            --require-release-state
+      - name: Run unit tests
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -m unittest discover -s tests -v
+      - name: Compile Python
+        env:
+          PYTHONPYCACHEPREFIX: /tmp/ltc-pycache
+        run: python -m py_compile scripts/*.py src/lightthecandle/*.py tests/*.py
+      - name: Build source and verified wheel artifacts
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m pip install --upgrade build
+          python -m build --sdist
+          python -m pip wheel --no-deps --no-build-isolation \
+            dist/lightthecandle-*.tar.gz --wheel-dir dist/from-sdist
+      - name: Verify release artifact inventories
+        if: matrix.python-version == '3.12'
+        run: |
+          python scripts/check_artifacts.py \
+            --sdist dist/lightthecandle-*.tar.gz \
+            --wheel dist/from-sdist/lightthecandle-*.whl
+      - name: Smoke-test wheel built from source distribution
+        if: matrix.python-version == '3.12'
+        run: |
+          python -m venv /tmp/ltc-release-venv
+          /tmp/ltc-release-venv/bin/python -m pip install --no-index \
+            dist/from-sdist/lightthecandle-*.whl
+          /tmp/ltc-release-venv/bin/lightthecandle --version
+          /tmp/ltc-release-venv/bin/lightthecandle profiles --json

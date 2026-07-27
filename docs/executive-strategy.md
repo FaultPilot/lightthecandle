@@ -10,7 +10,8 @@ when executing the existing plan is no longer the right decision.
 
 Version 0.1 captures the initial purpose, outcomes, measures, assumptions,
 constraints, decision principles, and review triggers. That seed is bound to
-the local registration ledger and cannot be edited without an integrity error.
+the local registration ledger; edits outside a supported versioning flow
+produce an integrity error in cooperative local use.
 
 Milestone 0.2 introduces explicit strategy versions, review proposals,
 approvals, experiments, measurements, retention, and rollback. Until then,

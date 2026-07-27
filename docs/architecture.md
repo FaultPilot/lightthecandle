@@ -55,7 +55,7 @@ Only the initial strategy seed and its policy digest binding exist in version
 ## Persistence
 
 - `.lightthecandle/project.json`: portable, non-secret, project configuration
-- `$LTC_HOME/state.sqlite`: machine-local projects and tamper-evident events
+- `$LTC_HOME/state.sqlite`: machine-local projects and hash-chained events
 - project documentation: reviewable requirements, decisions, plans, and memory
 - provider systems: authoritative remote facts when configured
 

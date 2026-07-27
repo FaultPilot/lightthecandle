@@ -45,11 +45,40 @@ SECRET_VALUE_PATTERNS = (
     re.compile(r"\b(?:sk|ghp|github_pat|xox[baprs])[-_][A-Za-z0-9_-]{16,}\b"),
     re.compile(r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
     re.compile(r"(?:postgres|postgresql)://[^:\s/]+:[^@\s/]+@", re.IGNORECASE),
+    re.compile(r"(?:https?|ssh|ftp)://[^:\s/@]+:[^@\s/]+@", re.IGNORECASE),
     re.compile(r"(?:password|passwd|secret|token|api[_-]?key)\s*[=:]\s*\S+", re.IGNORECASE),
 )
 ABSOLUTE_PATH = re.compile(
     r"(?<![A-Za-z0-9:/])(?:/(?!/)|~(?:/|\\)|[A-Za-z]:[\\/]|\\\\)"
 )
+
+
+class StructuredArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str) -> None:
+        if "--json" in sys.argv[1:]:
+            commands = {"init", "adopt", "register", "status", "doctor", "profiles"}
+            command = next((value for value in sys.argv[1:] if value in commands), "unknown")
+            print(
+                json.dumps(
+                    {
+                        "schema_version": "lightthecandle.report/v1",
+                        "command": command,
+                        "result": "blocked",
+                        "issues": [
+                            {
+                                "severity": "error",
+                                "code": "ARGUMENT_INVALID",
+                                "message": message,
+                            }
+                        ],
+                        "next_actions": [],
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            raise SystemExit(2)
+        super().error(message)
 
 
 def safe_actor_id(value: str | None) -> str:
@@ -410,7 +439,18 @@ def profile_findings(manifest: dict[str, Any]) -> list[dict[str, str]]:
     strategy = manifest.get("strategy") if isinstance(manifest.get("strategy"), dict) else {}
     for field in policy.get("required_strategy_fields", []):
         value = strategy.get(field)
-        if value == "" or value == [] or value is None:
+        incomplete = (
+            value is None
+            or (isinstance(value, str) and not value.strip())
+            or (
+                isinstance(value, list)
+                and (
+                    not value
+                    or any(not isinstance(item, str) or not item.strip() for item in value)
+                )
+            )
+        )
+        if incomplete:
             findings.append(
                 {
                     "severity": "warning",
@@ -546,6 +586,10 @@ def profiles_command(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             "schema_version": "lightthecandle.report/v1",
             "command": "profiles",
             "result": "ok",
+            "assurance": (
+                "Profiles define readiness expectations. They do not certify, "
+                "execute, or independently verify a project."
+            ),
             "profiles": [load_policy(profile) for profile in PROFILES],
         },
         0,
@@ -617,12 +661,16 @@ def add_project_creation(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = StructuredArgumentParser(
         prog="lightthecandle",
         description="A local-first virtual executive and software engineering organisation.",
     )
     parser.add_argument("--version", action="version", version=__version__)
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+        parser_class=StructuredArgumentParser,
+    )
     init_parser = subparsers.add_parser("init", help="Preview or initialise a new project.")
     add_project_creation(init_parser)
     adopt_parser = subparsers.add_parser("adopt", help="Preview or adopt an existing project.")

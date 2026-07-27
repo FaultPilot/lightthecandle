@@ -29,7 +29,7 @@ class LightTheCandleCliTest(unittest.TestCase):
     maxDiff = None
 
     def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory(dir="/private/tmp")
+        self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         self.home = self.root / "home"
         self.project = self.root / "project"
@@ -42,15 +42,18 @@ class LightTheCandleCliTest(unittest.TestCase):
         self,
         *args: str,
         cwd: Path | None = None,
+        env_overrides: dict[str, str] | None = None,
     ) -> tuple[subprocess.CompletedProcess[str], dict]:
+        environment = {
+            **os.environ,
+            "LTC_HOME": str(self.home),
+            "PYTHONDONTWRITEBYTECODE": "1",
+        }
+        environment.update(env_overrides or {})
         result = subprocess.run(
-            ["python3", str(CLI), *args, "--json"],
+            [sys.executable, str(CLI), *args, "--json"],
             cwd=cwd or ROOT,
-            env={
-                **os.environ,
-                "LTC_HOME": str(self.home),
-                "PYTHONDONTWRITEBYTECODE": "1",
-            },
+            env=environment,
             text=True,
             capture_output=True,
             check=False,
@@ -242,8 +245,8 @@ class LightTheCandleCliTest(unittest.TestCase):
         self.apply_adoption()
         path = self.project / ".lightthecandle" / "project.json"
         manifest = json.loads(path.read_text(encoding="utf-8"))
-        manifest["strategy"]["api_token"] = "ghp_123456789012345678901234"
-        manifest["description"] = "/Users/example/private/project"
+        manifest["strategy"]["api_token"] = "ghp_" + "123456789012345678901234"
+        manifest["description"] = "/Users/" + "example/private/project"
         path.write_text(json.dumps(manifest), encoding="utf-8")
         result, payload = self.run_cli("doctor", str(self.project))
         self.assertEqual(result.returncode, 10)
@@ -325,6 +328,215 @@ class LightTheCandleCliTest(unittest.TestCase):
         self.assertEqual(result.returncode, 10)
         self.assertEqual(payload["issues"][0]["code"], "MANIFEST_PATH_UNSAFE")
         self.assertFalse((outside / "project.json").exists())
+
+    def test_state_directory_swap_cannot_redirect_manifest_write(self) -> None:
+        self.make_node_project()
+        preview, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--goal",
+            "Ship a safe project.",
+            "--outcome",
+            "Keep project state inside the repository.",
+        )
+        self.assertEqual(preview.returncode, 0, preview.stderr)
+        state_directory = self.project / ".lightthecandle"
+        state_directory.mkdir()
+        outside = self.root / "outside"
+        outside.mkdir()
+        original_open = os.open
+        swapped = False
+
+        def swap_before_state_open(path, flags, *args, **kwargs):
+            nonlocal swapped
+            if (
+                not swapped
+                and path == ".lightthecandle"
+                and kwargs.get("dir_fd") is not None
+            ):
+                state_directory.rmdir()
+                state_directory.symlink_to(outside, target_is_directory=True)
+                swapped = True
+            return original_open(path, flags, *args, **kwargs)
+
+        with (
+            mock.patch.dict(os.environ, {"LTC_HOME": str(self.home)}),
+            mock.patch.object(storage.os, "open", side_effect=swap_before_state_open),
+            self.assertRaises(LightTheCandleError) as context,
+        ):
+            storage.register_project(
+                self.project,
+                payload["manifest"],
+                actor_id="race-test",
+            )
+
+        self.assertEqual(context.exception.code, "MANIFEST_PATH_UNSAFE")
+        self.assertTrue(swapped)
+        self.assertFalse((outside / "project.json").exists())
+
+    def test_symlinked_ltc_home_cannot_redirect_ledger_write(self) -> None:
+        self.make_node_project()
+        outside = self.root / "outside-home"
+        outside.mkdir()
+        self.home.symlink_to(outside, target_is_directory=True)
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "prototype",
+            "--goal",
+            "Keep local state private.",
+            "--apply",
+        )
+        self.assertEqual(result.returncode, 10)
+        self.assertEqual(payload["issues"][0]["code"], "LTC_HOME_UNSAFE")
+        self.assertFalse((outside / "state.sqlite").exists())
+
+    @unittest.skipUnless(os.name == "posix", "POSIX permissions are required")
+    def test_shared_ltc_home_is_rejected_without_chmod(self) -> None:
+        self.make_node_project()
+        self.home.mkdir(mode=0o755)
+        self.home.chmod(0o755)
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "prototype",
+            "--goal",
+            "Keep local state private.",
+            "--apply",
+        )
+        self.assertEqual(result.returncode, 10)
+        self.assertEqual(payload["issues"][0]["code"], "LTC_HOME_UNSAFE")
+        self.assertEqual(self.home.stat().st_mode & 0o777, 0o755)
+
+    def test_symlinked_state_database_cannot_redirect_write(self) -> None:
+        self.make_node_project()
+        self.home.mkdir(mode=0o700)
+        outside_database = self.root / "outside.sqlite"
+        with sqlite3.connect(outside_database) as connection:
+            connection.execute("CREATE TABLE sentinel(value TEXT)")
+        before = hashlib.sha256(outside_database.read_bytes()).hexdigest()
+        (self.home / "state.sqlite").symlink_to(outside_database)
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "prototype",
+            "--goal",
+            "Keep local state private.",
+            "--apply",
+        )
+        self.assertEqual(result.returncode, 10)
+        self.assertEqual(payload["issues"][0]["code"], "LEDGER_INVALID")
+        self.assertEqual(hashlib.sha256(outside_database.read_bytes()).hexdigest(), before)
+        self.assertFalse((self.project / ".lightthecandle" / "project.json").exists())
+
+    def test_relative_ltc_home_is_rejected(self) -> None:
+        self.make_node_project()
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "prototype",
+            "--goal",
+            "Keep local state unambiguous.",
+            "--apply",
+            env_overrides={"LTC_HOME": "relative-state"},
+        )
+        self.assertEqual(result.returncode, 10)
+        self.assertEqual(payload["issues"][0]["code"], "LTC_HOME_UNSAFE")
+
+    def test_ambient_git_paths_cannot_redirect_discovery(self) -> None:
+        self.make_node_project()
+        attacker = self.root / "attacker"
+        attacker.mkdir()
+        subprocess.run(
+            ["git", "init", "-q", str(attacker)],
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "prototype",
+            "--goal",
+            "Adopt only the selected project.",
+            env_overrides={
+                "GIT_DIR": str(attacker / ".git"),
+                "GIT_WORK_TREE": str(attacker),
+            },
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(payload["project_root"], str(self.project.resolve()))
+        self.assertFalse((attacker / ".lightthecandle").exists())
+
+    def test_plain_folder_adoption_works_without_git_on_path(self) -> None:
+        self.make_node_project()
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "prototype",
+            "--goal",
+            "Adopt a plain folder without Git.",
+            env_overrides={"PATH": str(self.root / "empty-bin")},
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(payload["project_root"], str(self.project.resolve()))
+        self.assertNotIn(
+            "source_control",
+            {
+                adapter["capability"]
+                for adapter in payload["manifest"]["adapters"]
+            },
+        )
+
+    def test_http_basic_credentials_are_rejected_from_manifest(self) -> None:
+        self.make_node_project()
+        result, payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--goal",
+            "Connect to https://alice:secret@example.com safely.",
+        )
+        self.assertEqual(result.returncode, 10)
+        self.assertIn(
+            "SECRET_VALUE_FORBIDDEN",
+            {issue["code"] for issue in payload["issues"]},
+        )
+
+    def test_whitespace_strategy_values_block_local_registration(self) -> None:
+        self.make_node_project()
+        self.apply_adoption()
+        for path in self.home.glob("state.sqlite*"):
+            path.unlink()
+        manifest_path = self.project / ".lightthecandle" / "project.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["strategy"]["outcomes"] = ["   "]
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        result, payload = self.run_cli("register", str(self.project))
+        self.assertEqual(result.returncode, 10)
+        self.assertIn(
+            "STRATEGY_FIELD_INVALID",
+            {issue["code"] for issue in payload["issues"]},
+        )
+
+    def test_json_mode_covers_argument_errors(self) -> None:
+        missing_command, missing_payload = self.run_cli()
+        self.assertEqual(missing_command.returncode, 2)
+        self.assertEqual(missing_payload["issues"][0]["code"], "ARGUMENT_INVALID")
+        invalid_profile, invalid_payload = self.run_cli(
+            "adopt",
+            str(self.project),
+            "--profile",
+            "unsupported",
+        )
+        self.assertEqual(invalid_profile.returncode, 2)
+        self.assertEqual(invalid_payload["command"], "adopt")
+        self.assertEqual(invalid_payload["issues"][0]["code"], "ARGUMENT_INVALID")
 
     def test_unknown_manifest_fields_fail_closed(self) -> None:
         self.make_node_project()

@@ -33,7 +33,7 @@
     },
     "name": {
       "type": "string",
-      "minLength": 1
+      "pattern": "\\S"
     },
     "description": {
       "type": "string"
@@ -85,26 +85,178 @@
       "required": ["current_stage", "enabled_stages"],
       "properties": {
         "current_stage": {
-          "type": "string"
+          "enum": [
+            "idea",
+            "discovery",
+            "feasibility",
+            "requirements",
+            "product_design",
+            "architecture",
+            "security_privacy_data",
+            "planning",
+            "implementation",
+            "verification",
+            "release",
+            "deployment",
+            "operations",
+            "maintenance",
+            "incident_response",
+            "retrospective",
+            "retirement"
+          ]
         },
         "enabled_stages": {
           "type": "array",
-          "items": {"type": "string"},
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "idea",
+              "discovery",
+              "feasibility",
+              "requirements",
+              "product_design",
+              "architecture",
+              "security_privacy_data",
+              "planning",
+              "implementation",
+              "verification",
+              "release",
+              "deployment",
+              "operations",
+              "maintenance",
+              "incident_response",
+              "retrospective",
+              "retirement"
+            ]
+          },
           "uniqueItems": true
         }
-      }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "current_stage": {"const": "idea"},
+            "enabled_stages": {"contains": {"const": "idea"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "discovery"},
+            "enabled_stages": {"contains": {"const": "discovery"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "feasibility"},
+            "enabled_stages": {"contains": {"const": "feasibility"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "requirements"},
+            "enabled_stages": {"contains": {"const": "requirements"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "product_design"},
+            "enabled_stages": {"contains": {"const": "product_design"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "architecture"},
+            "enabled_stages": {"contains": {"const": "architecture"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "security_privacy_data"},
+            "enabled_stages": {"contains": {"const": "security_privacy_data"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "planning"},
+            "enabled_stages": {"contains": {"const": "planning"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "implementation"},
+            "enabled_stages": {"contains": {"const": "implementation"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "verification"},
+            "enabled_stages": {"contains": {"const": "verification"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "release"},
+            "enabled_stages": {"contains": {"const": "release"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "deployment"},
+            "enabled_stages": {"contains": {"const": "deployment"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "operations"},
+            "enabled_stages": {"contains": {"const": "operations"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "maintenance"},
+            "enabled_stages": {"contains": {"const": "maintenance"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "incident_response"},
+            "enabled_stages": {"contains": {"const": "incident_response"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "retrospective"},
+            "enabled_stages": {"contains": {"const": "retrospective"}}
+          }
+        },
+        {
+          "properties": {
+            "current_stage": {"const": "retirement"},
+            "enabled_stages": {"contains": {"const": "retirement"}}
+          }
+        }
+      ]
     },
     "commands": {
       "type": "object",
+      "propertyNames": {
+        "pattern": "\\S"
+      },
       "additionalProperties": {
         "type": "array",
         "minItems": 1,
-        "items": {"type": "string"}
+        "items": {
+          "type": "string",
+          "pattern": "\\S"
+        }
       }
     },
     "technologies": {
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      },
       "uniqueItems": true
     },
     "adapters": {
@@ -114,8 +266,14 @@
         "additionalProperties": false,
         "required": ["capability", "provider", "mode"],
         "properties": {
-          "capability": {"type": "string"},
-          "provider": {"type": "string"},
+          "capability": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "provider": {
+            "type": "string",
+            "pattern": "\\S"
+          },
           "mode": {"enum": ["read_only", "disabled"]}
         }
       }

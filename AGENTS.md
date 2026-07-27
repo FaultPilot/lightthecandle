@@ -35,10 +35,14 @@ Run:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 PYTHONPYCACHEPREFIX=/tmp/ltc-pycache python3 -m py_compile scripts/ltc.py src/lightthecandle/*.py
+python3 scripts/release_guard.py
 python3 "$CODEX_HOME/skills/.system/plugin-creator/scripts/validate_plugin.py" .
 python3 "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" skills/lightthecandle
 claude plugin validate --strict .
 jq -e . .codex-plugin/plugin.json .claude-plugin/*.json .agents/plugins/marketplace.json schemas/*.json src/lightthecandle/policies/*.json
 ```
 
-Start narrow, then run the entire suite before release.
+Before publication, also run `python3 scripts/release_guard.py
+--require-license`, build both source and wheel distributions, install a wheel
+built from the source distribution, and test both plugins from the exact Git
+tag. Start narrow, then run the entire suite before release.

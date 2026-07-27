@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import re
 import sqlite3
-import tempfile
+import stat
 from typing import Any
 import uuid
 
@@ -20,7 +20,14 @@ GENESIS_EVENT_TYPES = {"project.adopted", "project.registered_local"}
 
 def ltc_home() -> Path:
     value = os.environ.get("LTC_HOME")
-    return Path(value).expanduser().resolve() if value else (Path.home() / ".lightthecandle")
+    path = Path(value).expanduser() if value else (Path.home() / ".lightthecandle")
+    if not path.is_absolute():
+        raise LightTheCandleError(
+            "LTC_HOME must be an absolute path.",
+            code="LTC_HOME_UNSAFE",
+            exit_code=10,
+        )
+    return Path(os.path.abspath(path))
 
 
 def state_path() -> Path:
@@ -35,31 +42,121 @@ def sha256_json(value: Any) -> str:
     return hashlib.sha256(canonical_json(value).encode("utf-8")).hexdigest()
 
 
+def _directory_flags() -> int:
+    return os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+
+
+def _same_identity(left: os.stat_result, right: os.stat_result) -> bool:
+    return (left.st_dev, left.st_ino) == (right.st_dev, right.st_ino)
+
+
 def atomic_create_json(path: Path, value: Any) -> tuple[int, int]:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    descriptor, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
-    temp_path = Path(temp_name)
+    root = path.parents[1]
+    state_name = path.parent.name
+    temp_name = f".{path.name}.{uuid.uuid4().hex}"
+    root_descriptor: int | None = None
+    state_descriptor: int | None = None
+    temp_descriptor: int | None = None
+    final_created = False
     try:
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        root_descriptor = os.open(root, _directory_flags())
+        try:
+            os.mkdir(state_name, mode=0o755, dir_fd=root_descriptor)
+        except FileExistsError:
+            pass
+        state_descriptor = os.open(
+            state_name,
+            _directory_flags(),
+            dir_fd=root_descriptor,
+        )
+        state_identity = os.fstat(state_descriptor)
+        if not stat.S_ISDIR(state_identity.st_mode):
+            raise LightTheCandleError(
+                f"Project state path must be a directory: {path.parent}",
+                code="MANIFEST_PATH_UNSAFE",
+                exit_code=10,
+            )
+        live_state_identity = os.stat(
+            state_name,
+            dir_fd=root_descriptor,
+            follow_symlinks=False,
+        )
+        if not _same_identity(state_identity, live_state_identity):
+            raise LightTheCandleError(
+                f"Project state directory changed during creation: {path.parent}",
+                code="MANIFEST_PATH_UNSAFE",
+                exit_code=10,
+            )
+        temp_descriptor = os.open(
+            temp_name,
+            os.O_WRONLY
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+            dir_fd=state_descriptor,
+        )
+        with os.fdopen(temp_descriptor, "w", encoding="utf-8") as handle:
+            temp_descriptor = None
             json.dump(value, handle, indent=2, sort_keys=True, ensure_ascii=True)
             handle.write("\n")
             handle.flush()
             os.fsync(handle.fileno())
-        os.chmod(temp_path, 0o644)
+            os.fchmod(handle.fileno(), 0o644)
         try:
-            os.link(temp_path, path, follow_symlinks=False)
+            os.link(
+                temp_name,
+                path.name,
+                src_dir_fd=state_descriptor,
+                dst_dir_fd=state_descriptor,
+                follow_symlinks=False,
+            )
+            final_created = True
         except FileExistsError as error:
             raise LightTheCandleError(
                 f"Refusing to overwrite existing manifest: {path}",
                 code="PROJECT_ALREADY_ADOPTED",
                 exit_code=10,
             ) from error
-        identity = path.lstat()
-        temp_path.unlink()
+        live_state_identity = os.stat(
+            state_name,
+            dir_fd=root_descriptor,
+            follow_symlinks=False,
+        )
+        if not _same_identity(state_identity, live_state_identity):
+            raise LightTheCandleError(
+                f"Project state directory changed during creation: {path.parent}",
+                code="MANIFEST_PATH_UNSAFE",
+                exit_code=10,
+            )
+        identity = os.stat(path.name, dir_fd=state_descriptor, follow_symlinks=False)
+        os.unlink(temp_name, dir_fd=state_descriptor)
         return identity.st_dev, identity.st_ino
-    except Exception:
-        temp_path.unlink(missing_ok=True)
+    except Exception as error:
+        if state_descriptor is not None:
+            if final_created:
+                try:
+                    os.unlink(path.name, dir_fd=state_descriptor)
+                except FileNotFoundError:
+                    pass
+            try:
+                os.unlink(temp_name, dir_fd=state_descriptor)
+            except FileNotFoundError:
+                pass
+        if isinstance(error, OSError):
+            raise LightTheCandleError(
+                f"Project manifest path changed during creation: {error}",
+                code="MANIFEST_PATH_UNSAFE",
+                exit_code=10,
+            ) from error
         raise
+    finally:
+        if temp_descriptor is not None:
+            os.close(temp_descriptor)
+        if state_descriptor is not None:
+            os.close(state_descriptor)
+        if root_descriptor is not None:
+            os.close(root_descriptor)
 
 
 def manifest_path(root: Path) -> Path:
@@ -130,13 +227,119 @@ def read_manifest(root: Path) -> dict[str, Any]:
     return value
 
 
-def open_state(*, write: bool) -> sqlite3.Connection | None:
-    path = state_path()
-    if not write and not path.exists():
+def _state_path_error(message: str) -> LightTheCandleError:
+    return LightTheCandleError(
+        message,
+        code="LTC_HOME_UNSAFE",
+        exit_code=10,
+    )
+
+
+def _verify_private_state_home(path: Path) -> os.stat_result:
+    try:
+        identity = path.lstat()
+    except OSError as error:
+        raise _state_path_error(f"LTC_HOME cannot be inspected safely: {error}") from error
+    if stat.S_ISLNK(identity.st_mode) or not stat.S_ISDIR(identity.st_mode):
+        raise _state_path_error("LTC_HOME must be a real directory, not a symlink.")
+    if os.name == "posix":
+        if hasattr(os, "geteuid") and identity.st_uid != os.geteuid():
+            raise _state_path_error("LTC_HOME must be owned by the current user.")
+        if identity.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
+            raise _state_path_error("LTC_HOME permissions must not allow group or other access.")
+    return identity
+
+
+def _prepare_state_home(*, write: bool) -> Path | None:
+    home = ltc_home()
+    try:
+        _verify_private_state_home(home)
+        return home
+    except LightTheCandleError:
+        if home.exists() or home.is_symlink():
+            raise
+    if not write:
         return None
+    try:
+        home.mkdir(parents=True, mode=0o700, exist_ok=False)
+    except FileExistsError:
+        pass
+    except OSError as error:
+        raise _state_path_error(f"LTC_HOME cannot be created safely: {error}") from error
+    _verify_private_state_home(home)
+    return home
+
+
+def _verify_private_state_file(path: Path) -> os.stat_result:
+    try:
+        identity = path.lstat()
+    except OSError as error:
+        raise LightTheCandleError(
+            f"Local event ledger cannot be inspected safely: {error}",
+            code="LEDGER_INVALID",
+            exit_code=10,
+        ) from error
+    if stat.S_ISLNK(identity.st_mode) or not stat.S_ISREG(identity.st_mode):
+        raise LightTheCandleError(
+            "Local event ledger must be a real regular file, not a symlink.",
+            code="LEDGER_INVALID",
+            exit_code=10,
+        )
+    if os.name == "posix":
+        if hasattr(os, "geteuid") and identity.st_uid != os.geteuid():
+            raise LightTheCandleError(
+                "Local event ledger must be owned by the current user.",
+                code="LEDGER_INVALID",
+                exit_code=10,
+            )
+        if identity.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
+            raise LightTheCandleError(
+                "Local event ledger permissions must not allow group or other access.",
+                code="LEDGER_INVALID",
+                exit_code=10,
+            )
+    return identity
+
+
+def _create_private_state_file(path: Path) -> os.stat_result:
+    descriptor: int | None = None
+    try:
+        descriptor = os.open(
+            path,
+            os.O_RDWR
+            | os.O_CREAT
+            | os.O_EXCL
+            | getattr(os, "O_NOFOLLOW", 0),
+            0o600,
+        )
+        return os.fstat(descriptor)
+    except FileExistsError:
+        return _verify_private_state_file(path)
+    except OSError as error:
+        raise LightTheCandleError(
+            f"Local event ledger cannot be created safely: {error}",
+            code="LEDGER_INVALID",
+            exit_code=10,
+        ) from error
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+
+
+def open_state(*, write: bool) -> sqlite3.Connection | None:
+    home = _prepare_state_home(write=write)
+    if home is None:
+        return None
+    path = home / "state.sqlite"
+    if not write and not path.exists() and not path.is_symlink():
+        return None
+    expected_identity = (
+        _create_private_state_file(path)
+        if write
+        else _verify_private_state_file(path)
+    )
     if write:
-        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        os.chmod(path.parent, 0o700)
+        connection: sqlite3.Connection | None = None
         try:
             connection = sqlite3.connect(path, timeout=30, isolation_level=None)
             connection.execute("PRAGMA journal_mode=DELETE")
@@ -168,17 +371,37 @@ def open_state(*, write: bool) -> sqlite3.Connection | None:
                 ON events(project_id, sequence);
             """
             )
-            os.chmod(path, 0o600)
+            live_identity = _verify_private_state_file(path)
+            if not _same_identity(expected_identity, live_identity):
+                raise LightTheCandleError(
+                    "Local event ledger changed while it was being opened.",
+                    code="LEDGER_INVALID",
+                    exit_code=10,
+                )
         except sqlite3.Error as error:
+            if connection is not None:
+                connection.close()
             raise LightTheCandleError(
                 f"Local event ledger cannot be opened for writing: {error}",
                 code="LEDGER_INVALID",
                 exit_code=10,
             ) from error
+        except Exception:
+            if connection is not None:
+                connection.close()
+            raise
         return connection
-    uri = f"file:{path}?mode=ro"
+    uri = f"{path.as_uri()}?mode=ro"
     try:
         connection = sqlite3.connect(uri, uri=True, timeout=5, isolation_level=None)
+        live_identity = _verify_private_state_file(path)
+        if not _same_identity(expected_identity, live_identity):
+            connection.close()
+            raise LightTheCandleError(
+                "Local event ledger changed while it was being opened.",
+                code="LEDGER_INVALID",
+                exit_code=10,
+            )
     except sqlite3.Error as error:
         raise LightTheCandleError(
             f"Local event ledger cannot be opened read-only: {error}",

@@ -65,10 +65,12 @@ data, infrastructure, monorepo, and generic software projects.
 - `prototype`: prove an idea without pretending it is production-ready
 - `quality`: deliver a polished app, website, service, or library
 - `production`: serve real users and important data with operational controls
-- `enterprise`: produce buyer-defensible security, reliability, governance,
-  recovery, and audit evidence
+- `enterprise`: require buyer-defensible security, reliability, governance,
+  recovery, and audit evidence before claiming readiness
 
 Profiles define minimum evidence. They do not prescribe one stack or provider.
+In version 0.1 they are readiness policies, not executed verification,
+certification, assurance, or proof of compliance.
 Version 0.1 defaults to `quality`; the user may explicitly choose another
 profile after reviewing the preview. Deterministic risk-driven escalation is a
 later policy-engine capability.

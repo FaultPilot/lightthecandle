@@ -50,23 +50,38 @@ def read_json(root: Path, relative: str) -> dict[str, Any] | None:
 
 
 def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    environment = dict(os.environ)
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.upper().startswith("GIT_")
+    }
     environment["GIT_OPTIONAL_LOCKS"] = "0"
-    return subprocess.run(
-        [
-            "git",
-            "-c",
-            "core.hooksPath=/dev/null",
-            "-c",
-            "core.fsmonitor=false",
-            *args,
-        ],
-        cwd=root,
-        env=environment,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
+    environment["GIT_CONFIG_NOSYSTEM"] = "1"
+    environment["GIT_TERMINAL_PROMPT"] = "0"
+    command = [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "core.fsmonitor=false",
+        *args,
+    ]
+    try:
+        return subprocess.run(
+            command,
+            cwd=root,
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+    except FileNotFoundError as error:
+        return subprocess.CompletedProcess(
+            command,
+            returncode=127,
+            stdout="",
+            stderr=str(error),
+        )
 
 
 def git_root(path: Path) -> Path | None:
@@ -247,7 +262,7 @@ def sanitize_remote(value: str) -> str | None:
         return urlunsplit((parsed.scheme, f"{hostname}{port}", parsed.path, "", ""))
     if "@" in value and ":" in value:
         _, host_path = value.rsplit("@", 1)
-        return host_path
+        return host_path.split("?", 1)[0].split("#", 1)[0]
     return value.split("?", 1)[0].split("#", 1)[0]
 
 

@@ -14,30 +14,54 @@
     "review_triggers"
   ],
   "properties": {
-    "purpose": {"type": "string"},
+    "purpose": {
+      "type": "string",
+      "anyOf": [
+        {"maxLength": 0},
+        {"pattern": "\\S"}
+      ]
+    },
     "outcomes": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
     },
     "success_measures": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
     },
     "assumptions": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
     },
     "constraints": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
     },
     "decision_principles": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
     },
     "review_triggers": {
       "type": "array",
-      "items": {"type": "string"}
+      "items": {
+        "type": "string",
+        "pattern": "\\S"
+      }
     }
   }
 }

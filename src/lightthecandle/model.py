@@ -334,22 +334,22 @@ def validate_manifest(manifest: dict[str, Any]) -> list[dict[str, str]]:
         for field in required_strategy:
             value = manifest["strategy"].get(field)
             if field == "purpose":
-                if not isinstance(value, str):
+                if not isinstance(value, str) or (value and not value.strip()):
                     issues.append(
                         {
                             "severity": "error",
                             "code": "STRATEGY_FIELD_INVALID",
-                            "message": "strategy.purpose must be a string.",
+                            "message": "strategy.purpose must be empty or contain non-whitespace text.",
                         }
                     )
             elif not isinstance(value, list) or not all(
-                isinstance(item, str) for item in value
+                isinstance(item, str) and bool(item.strip()) for item in value
             ):
                 issues.append(
                     {
                         "severity": "error",
                         "code": "STRATEGY_FIELD_INVALID",
-                        "message": f"strategy.{field} must be an array of strings.",
+                        "message": f"strategy.{field} must contain non-whitespace strings.",
                     }
                 )
     lifecycle = manifest["lifecycle"]
@@ -414,9 +414,10 @@ def validate_manifest(manifest: dict[str, Any]) -> list[dict[str, str]]:
         for name, command in manifest["commands"].items():
             if (
                 not isinstance(name, str)
+                or not name.strip()
                 or not isinstance(command, list)
                 or not command
-                or not all(isinstance(part, str) and part for part in command)
+                or not all(isinstance(part, str) and part.strip() for part in command)
             ):
                 issues.append(
                     {
@@ -427,7 +428,10 @@ def validate_manifest(manifest: dict[str, Any]) -> list[dict[str, str]]:
                 )
     if (
         not isinstance(manifest["technologies"], list)
-        or not all(isinstance(value, str) and value for value in manifest["technologies"])
+        or not all(
+            isinstance(value, str) and value.strip()
+            for value in manifest["technologies"]
+        )
         or len(manifest["technologies"]) != len(set(manifest["technologies"]))
     ):
         issues.append(
@@ -450,9 +454,9 @@ def validate_manifest(manifest: dict[str, Any]) -> list[dict[str, str]]:
             if (
                 not isinstance(adapter, dict)
                 or not isinstance(adapter.get("capability"), str)
-                or not adapter.get("capability")
+                or not adapter.get("capability", "").strip()
                 or not isinstance(adapter.get("provider"), str)
-                or not adapter.get("provider")
+                or not adapter.get("provider", "").strip()
                 or adapter.get("mode") not in {"read_only", "disabled"}
             ):
                 issues.append(

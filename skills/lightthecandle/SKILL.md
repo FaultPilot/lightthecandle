@@ -83,7 +83,8 @@ coordination, or enterprise certification.
    - `prototype`: prove an idea honestly
    - `quality`: build a polished app, site, service, or library
    - `production`: serve real users and important data
-   - `enterprise`: produce buyer-defensible operational evidence
+   - `enterprise`: require buyer-defensible operational evidence before
+     claiming readiness
 4. Run `init` or `adopt` without `--apply`.
 5. Present detected project type, technologies, commands, adapters, strategy
    gaps, assumptions, and profile trade-offs.
@@ -97,8 +98,9 @@ local trust decision; it does not authenticate the copy's origin, ownership,
 signatures, history, or prior approvals.
 
 The committed `.lightthecandle/project.json` is portable and non-secret.
-Machine-local paths and tamper-evident events live under `$LTC_HOME`, defaulting
-to `~/.lightthecandle`.
+Machine-local paths and hash-chained events live under `$LTC_HOME`, defaulting
+to `~/.lightthecandle`. The chain detects accidental corruption and unexplained
+mutation; it is not signed evidence against a hostile local database writer.
 
 ## Executive strategy
 
@@ -119,9 +121,10 @@ plan when new evidence shows that it no longer serves the approved intent.
 Read `<plugin-root>/docs/executive-strategy.md` before designing strategy or
 learning features.
 
-In v0.1, the adopted strategy seed is immutable because any unexplained
-manifest change fails its ledger binding. Strategy review, approval, versioning,
-trial measurement, and rollback arrive through the milestone 0.2 event model.
+In v0.1, there is no supported strategy-mutation command, and an unexplained
+manifest change fails its ledger binding in cooperative local use. Strategy
+review, approval, versioning, trial measurement, and rollback arrive through
+the milestone 0.2 event model.
 
 ## Controlled self-evolution
 

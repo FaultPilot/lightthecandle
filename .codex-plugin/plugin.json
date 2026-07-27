@@ -1,6 +1,6 @@
 {
   "name": "lightthecandle",
-  "version": "0.1.2+codex.20260727104455",
+  "version": "0.1.3",
   "description": "A local-first foundation for adopting software projects into governed delivery.",
   "author": {
     "name": "Aaron Robbins"
