@@ -11,7 +11,7 @@ sandbox, or production control plane.
 | Surface | Beta support |
 | --- | --- |
 | Operating system | macOS and Linux |
-| Python | 3.9 or newer |
+| Python | 3.10 or newer |
 | Codex | Tested with Codex CLI 0.145.0; older plugin hosts are unsupported |
 | Claude Code | Tested with Claude Code 2.1.207; older plugin hosts are unsupported |
 | Git | Optional for plain folders; required for Git marketplace installation and Git discovery |
