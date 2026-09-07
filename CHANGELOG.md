@@ -4,6 +4,14 @@ All notable changes are recorded here. Light the Candle follows Semantic
 Versioning for tagged releases; pre-1.0 compatibility remains explicitly
 limited.
 
+## [Unreleased]
+
+### Changed
+
+- Require Python 3.10 or newer and use setuptools 83.0.0 to address the
+  build backend security advisory GHSA-h35f-9h28-mq5c.
+- Verify source distributions and installed wheels on Python 3.10 and 3.12.
+
 ## [0.1.3] - 2026-07-27
 
 ### Added

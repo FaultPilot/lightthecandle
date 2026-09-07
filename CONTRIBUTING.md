@@ -6,7 +6,7 @@ Contributions are accepted under the repository's Apache-2.0 license.
 
 ## Development environment
 
-- Python 3.9 or newer
+- Python 3.10 or newer
 - Git
 - Codex CLI for Codex packaging validation
 - Claude Code for Claude marketplace validation
