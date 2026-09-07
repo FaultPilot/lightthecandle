@@ -45,7 +45,7 @@ certify a project, or independently prove compliance.
 ## Prerequisites
 
 - macOS or Linux; Windows is not yet in the supported beta boundary
-- Python 3.9 or newer
+- Python 3.10 or newer
 - Git for marketplace installation and Git-aware discovery
 - Codex or Claude Code with plugin marketplace support
 
